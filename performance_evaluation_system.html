@@ -1,0 +1,485 @@
+
+<h2 class="sr-only">Ажилчдын явцын үнэлгээний систем — судалгаа, үнэлгээ, график харьцуулалт</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.app{min-height:600px}
+.nav{display:flex;gap:4px;padding:1rem 0 1.5rem;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:1.5rem}
+.nav-btn{padding:7px 18px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);background:transparent;cursor:pointer;font-size:13px;color:var(--color-text-secondary);font-family:var(--font-sans)}
+.nav-btn.active{background:var(--color-background-secondary);color:var(--color-text-primary);border-color:var(--color-border-secondary);font-weight:500}
+.section{display:none}.section.active{display:block}
+.page-title{font-size:18px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--color-text-secondary);margin-bottom:1.5rem}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem}
+.q-block{margin-bottom:1.25rem}
+.q-label{font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px}
+.q-sub{font-size:12px;color:var(--color-text-secondary);margin-bottom:10px}
+.stars{display:flex;gap:6px}
+.star{width:32px;height:32px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);background:transparent;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;color:var(--color-text-tertiary);transition:background 0.15s}
+.star.sel{background:#FAC775;border-color:#EF9F27;color:#633806}
+.star:hover{background:var(--color-background-secondary)}
+textarea{width:100%;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px;font-family:var(--font-sans);font-size:13px;color:var(--color-text-primary);background:var(--color-background-primary);resize:vertical;min-height:80px}
+textarea:focus{outline:none;border-color:var(--color-border-primary)}
+.btn-primary{padding:9px 24px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:14px;font-weight:500;cursor:pointer;color:var(--color-text-primary);font-family:var(--font-sans)}
+.btn-primary:hover{background:var(--color-background-tertiary)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.5rem}
+.metric-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:1rem}
+.metric-val{font-size:26px;font-weight:500;color:var(--color-text-primary)}
+.metric-label{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
+.metric-badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:var(--border-radius-md);margin-top:6px}
+.badge-up{background:#EAF3DE;color:#3B6D11}
+.badge-dn{background:#FCEBEB;color:#A32D2D}
+.chart-wrap{position:relative;width:100%;height:280px;margin:1rem 0}
+.chart-wrap-tall{position:relative;width:100%;height:320px;margin:1rem 0}
+.filter-row{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.filter-btn{padding:5px 14px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);background:transparent;cursor:pointer;font-size:12px;color:var(--color-text-secondary);font-family:var(--font-sans)}
+.filter-btn.active{background:var(--color-background-secondary);color:var(--color-text-primary);border-color:var(--color-border-secondary);font-weight:500}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px;font-size:12px;color:var(--color-text-secondary)}
+.legend span{display:flex;align-items:center;gap:5px}
+.leg-dot{width:10px;height:10px;border-radius:2px}
+.table{width:100%;border-collapse:collapse;font-size:13px}
+.table th{text-align:left;padding:8px 10px;color:var(--color-text-secondary);font-weight:500;border-bottom:0.5px solid var(--color-border-tertiary)}
+.table td{padding:8px 10px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary)}
+.pct-bar{height:6px;border-radius:3px;background:var(--color-border-tertiary);margin-top:4px}
+.pct-fill{height:100%;border-radius:3px}
+.success-msg{background:#EAF3DE;border:0.5px solid #C0DD97;border-radius:var(--border-radius-md);padding:1rem;color:#3B6D11;font-size:14px;margin-top:1rem;display:none}
+.section-title{font-size:15px;font-weight:500;color:var(--color-text-primary);margin-bottom:1rem}
+.radio-group{display:flex;gap:8px;flex-wrap:wrap}
+.radio-opt{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:var(--color-text-secondary)}
+.radio-opt input{cursor:pointer}
+</style>
+
+<div class="app">
+  <div class="nav">
+    <button class="nav-btn active" onclick="showSection('survey')">Судалгаа өгөх</button>
+    <button class="nav-btn" onclick="showSection('admin')">Судалгаа оруулах</button>
+    <button class="nav-btn" onclick="showSection('results')">Үнэлгээ %</button>
+    <button class="nav-btn" onclick="showSection('charts')">График харьцуулалт</button>
+    <button class="nav-btn" onclick="showSection('summary')">Нэгдсэн дүгнэлт</button>
+  </div>
+
+  <!-- SECTION 1: Судалгаа өгөх -->
+  <div id="sec-survey" class="section active">
+    <p class="page-title">Ажилчдын явцын үнэлгээний судалгаа</p>
+    <p class="page-sub">Та бүх асуултад үнэнч, шударгаар хариулна уу. Судалгаа нэргүй явагдана.</p>
+    <div class="card">
+      <div style="display:flex;gap:12px;margin-bottom:1.25rem">
+        <div style="flex:1">
+          <div class="q-label" style="margin-bottom:4px">Хэлтэс</div>
+          <select id="dept" style="width:100%;padding:8px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:13px;font-family:var(--font-sans)">
+            <option>Маркетинг</option><option>Борлуулалт</option><option>Инженерчлэл</option><option>Санхүү</option><option>HR</option>
+          </select>
+        </div>
+        <div style="flex:1">
+          <div class="q-label" style="margin-bottom:4px">Сар</div>
+          <select id="month" style="width:100%;padding:8px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:13px;font-family:var(--font-sans)">
+            <option>1-р сар</option><option>2-р сар</option><option>3-р сар</option><option>4-р сар</option><option>5-р сар</option><option>6-р сар</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="q-block">
+        <div class="q-label">1. Ажлын бүтээмж, гүйцэтгэл</div>
+        <div class="q-sub">Ажилтан зорилтот үзүүлэлтдээ хэр хүрч байна вэ?</div>
+        <div class="stars" id="stars1">
+          <div class="star" data-q="1" data-v="1" onclick="setStar(1,1)">1</div>
+          <div class="star" data-q="1" data-v="2" onclick="setStar(1,2)">2</div>
+          <div class="star" data-q="1" data-v="3" onclick="setStar(1,3)">3</div>
+          <div class="star" data-q="1" data-v="4" onclick="setStar(1,4)">4</div>
+          <div class="star" data-q="1" data-v="5" onclick="setStar(1,5)">5</div>
+        </div>
+      </div>
+      <div class="q-block">
+        <div class="q-label">2. Хамтын ажиллагаа, багийн орчин</div>
+        <div class="q-sub">Хамт олонтойгоо хэр сайн хамтарч ажилладаг вэ?</div>
+        <div class="stars" id="stars2">
+          <div class="star" data-q="2" data-v="1" onclick="setStar(2,1)">1</div>
+          <div class="star" data-q="2" data-v="2" onclick="setStar(2,2)">2</div>
+          <div class="star" data-q="2" data-v="3" onclick="setStar(2,3)">3</div>
+          <div class="star" data-q="2" data-v="4" onclick="setStar(2,4)">4</div>
+          <div class="star" data-q="2" data-v="5" onclick="setStar(2,5)">5</div>
+        </div>
+      </div>
+      <div class="q-block">
+        <div class="q-label">3. Хугацаанд нь биелүүлэх чадвар</div>
+        <div class="q-sub">Ажилтан даалгаврыг хуваарийн дагуу биелүүлдэг үү?</div>
+        <div class="stars" id="stars3">
+          <div class="star" data-q="3" data-v="1" onclick="setStar(3,1)">1</div>
+          <div class="star" data-q="3" data-v="2" onclick="setStar(3,2)">2</div>
+          <div class="star" data-q="3" data-v="3" onclick="setStar(3,3)">3</div>
+          <div class="star" data-q="3" data-v="4" onclick="setStar(3,4)">4</div>
+          <div class="star" data-q="3" data-v="5" onclick="setStar(3,5)">5</div>
+        </div>
+      </div>
+      <div class="q-block">
+        <div class="q-label">4. Санаачлага, идэвхи</div>
+        <div class="q-sub">Ажилтан өөрийн санаачлагаар асуудал шийддэг үү?</div>
+        <div class="stars" id="stars4">
+          <div class="star" data-q="4" data-v="1" onclick="setStar(4,1)">1</div>
+          <div class="star" data-q="4" data-v="2" onclick="setStar(4,2)">2</div>
+          <div class="star" data-q="4" data-v="3" onclick="setStar(4,3)">3</div>
+          <div class="star" data-q="4" data-v="4" onclick="setStar(4,4)">4</div>
+          <div class="star" data-q="4" data-v="5" onclick="setStar(4,5)">5</div>
+        </div>
+      </div>
+      <div class="q-block">
+        <div class="q-label">5. Ажлын талаарх сэтгэл ханамж</div>
+        <div class="q-sub">Та ажлаа хэр сайн тал руугаа мэдэрч байна вэ?</div>
+        <div class="stars" id="stars5">
+          <div class="star" data-q="5" data-v="1" onclick="setStar(5,1)">1</div>
+          <div class="star" data-q="5" data-v="2" onclick="setStar(5,2)">2</div>
+          <div class="star" data-q="5" data-v="3" onclick="setStar(5,3)">3</div>
+          <div class="star" data-q="5" data-v="4" onclick="setStar(5,4)">4</div>
+          <div class="star" data-q="5" data-v="5" onclick="setStar(5,5)">5</div>
+        </div>
+      </div>
+      <div class="q-block">
+        <div class="q-label">Нэмэлт санал, сэтгэгдэл</div>
+        <textarea id="comment" placeholder="Ажлын орчин, удирдлага, хамт олны талаар санал бодлоо бичнэ үү..."></textarea>
+      </div>
+      <button class="btn-primary" onclick="submitSurvey()">Судалгаа илгээх</button>
+      <div class="success-msg" id="success-msg">Судалгаа амжилттай илгээгдлээ. Танд баярлалаа!</div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: Судалгаа оруулах -->
+  <div id="sec-admin" class="section">
+    <p class="page-title">Судалгааны асуулт удирдах</p>
+    <p class="page-sub">Шинэ асуулт нэмэх болон одоо байгаа асуултуудыг харах</p>
+    <div class="card" style="margin-bottom:1rem">
+      <div class="section-title">Шинэ асуулт нэмэх</div>
+      <div style="margin-bottom:10px">
+        <div class="q-label" style="margin-bottom:4px">Асуултын гарчиг</div>
+        <input type="text" id="new-q-title" placeholder="Жишээ: Удирдлагаас хүлээн авдаг дэмжлэг" style="width:100%;padding:8px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:13px;font-family:var(--font-sans)">
+      </div>
+      <div style="margin-bottom:10px">
+        <div class="q-label" style="margin-bottom:4px">Асуултын тайлбар</div>
+        <input type="text" id="new-q-sub" placeholder="Ажилтанд үзүүлэх дэлгэрэнгүй тайлбар..." style="width:100%;padding:8px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:13px;font-family:var(--font-sans)">
+      </div>
+      <div style="margin-bottom:12px">
+        <div class="q-label" style="margin-bottom:4px">Хариултын төрөл</div>
+        <div class="radio-group">
+          <label class="radio-opt"><input type="radio" name="qtype" value="star" checked> 1-5 оноо</label>
+          <label class="radio-opt"><input type="radio" name="qtype" value="text"> Текст хариулт</label>
+          <label class="radio-opt"><input type="radio" name="qtype" value="yn"> Тийм/Үгүй</label>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="addQuestion()">Асуулт нэмэх</button>
+    </div>
+    <div class="card">
+      <div class="section-title">Одоогийн асуултууд</div>
+      <div id="q-list"></div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: Үнэлгээ % -->
+  <div id="sec-results" class="section">
+    <p class="page-title">Үнэлгээний дүн — хувиар</p>
+    <p class="page-sub">Хэлтэс болон асуулт тус бүрийн үнэлгээний хувь</p>
+    <div class="grid-2">
+      <div class="metric-card">
+        <div class="metric-val" id="avg-overall">78%</div>
+        <div class="metric-label">Нийт дундаж үнэлгээ</div>
+        <span class="metric-badge badge-up">+4% өмнөх сараас</span>
+      </div>
+      <div class="metric-card">
+        <div class="metric-val" id="total-resp">142</div>
+        <div class="metric-label">Нийт хариулсан ажилтан</div>
+        <span class="metric-badge badge-up">+12 шинэ</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">Хэлтэс тус бүрийн үнэлгээ</div>
+      <table class="table" id="dept-table">
+        <thead><tr><th>Хэлтэс</th><th>Бүтээмж</th><th>Хамтарч ажиллах</th><th>Цаг баримтлал</th><th>Санаачлага</th><th>Дундаж</th></tr></thead>
+        <tbody id="dept-tbody"></tbody>
+      </table>
+    </div>
+    <div class="card" style="margin-top:1rem">
+      <div class="section-title">Асуулт тус бүрийн үнэлгээний хувь</div>
+      <div id="q-pct-list"></div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: График харьцуулалт -->
+  <div id="sec-charts" class="section">
+    <p class="page-title">Сараар болон улирлаар харьцуулалт</p>
+    <p class="page-sub">Явцын үнэлгээний цаг хугацааны чиг хандлага</p>
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="setView('monthly',this)">Сараар</button>
+      <button class="filter-btn" onclick="setView('quarterly',this)">Улирлаар</button>
+    </div>
+    <div class="card" style="margin-bottom:1rem">
+      <div class="section-title" id="chart1-title">Сарын үнэлгээ — хэлтэс тус бүр (%)</div>
+      <div class="legend" id="chart1-legend"></div>
+      <div class="chart-wrap-tall"><canvas id="lineChart" role="img" aria-label="Сарын үнэлгээний шугаман график">Хэлтэс тус бүрийн сарын үнэлгээ харуулна.</canvas></div>
+    </div>
+    <div class="card">
+      <div class="section-title" id="chart2-title">Сарын нийт дундаж үнэлгээ (%)</div>
+      <div class="chart-wrap"><canvas id="barChart" role="img" aria-label="Сарын нийт дундаж үнэлгээний баганан график">Нийт дундаж үнэлгээ сараар харуулна.</canvas></div>
+    </div>
+  </div>
+
+  <!-- SECTION 5: Нэгдсэн дүгнэлт -->
+  <div id="sec-summary" class="section">
+    <p class="page-title">Нэгдсэн дүгнэлт</p>
+    <p class="page-sub">Бүх хэлтсийн явцын үнэлгээний цогц тайлан</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:1.5rem">
+      <div class="metric-card"><div class="metric-val">78%</div><div class="metric-label">Нийт дундаж</div><span class="metric-badge badge-up">+4%</span></div>
+      <div class="metric-card"><div class="metric-val">84%</div><div class="metric-label">Шилдэг хэлтэс</div><div style="font-size:11px;color:var(--color-text-secondary);margin-top:2px">Инженерчлэл</div></div>
+      <div class="metric-card"><div class="metric-val">68%</div><div class="metric-label">Сайжрах шаардлагатай</div><div style="font-size:11px;color:var(--color-text-secondary);margin-top:2px">Санхүү</div></div>
+    </div>
+    <div class="card" style="margin-bottom:1rem">
+      <div class="section-title">Радар — хэлтсийн чадамжийн харьцуулалт</div>
+      <div class="chart-wrap-tall"><canvas id="radarChart" role="img" aria-label="Хэлтсийн чадамжийн радар график">Хэлтэс тус бүрийн 5 үзүүлэлтийн харьцуулалт.</canvas></div>
+    </div>
+    <div class="card">
+      <div class="section-title">Улирлын дэвшлийн график</div>
+      <div class="legend" id="summary-legend"></div>
+      <div class="chart-wrap-tall"><canvas id="summaryChart" role="img" aria-label="Улирлын дэвшлийн график">4 улирлын үнэлгээний харьцуулалт.</canvas></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const ratings = {1:[],2:[],3:[],4:[],5:[]};
+const customQuestions = [
+  {title:'Ажлын бүтээмж, гүйцэтгэл',sub:'Ажилтан зорилтот үзүүлэлтдээ хэр хүрч байна вэ?',type:'star'},
+  {title:'Хамтын ажиллагаа, багийн орчин',sub:'Хамт олонтойгоо хэр сайн хамтарч ажилладаг вэ?',type:'star'},
+  {title:'Хугацаанд нь биелүүлэх чадвар',sub:'Ажилтан даалгаврыг хуваарийн дагуу биелүүлдэг үү?',type:'star'},
+  {title:'Санаачлага, идэвхи',sub:'Ажилтан өөрийн санаачлагаар асуудал шийддэг үү?',type:'star'},
+  {title:'Ажлын талаарх сэтгэл ханамж',sub:'Та ажлаа хэр сайн тал руугаа мэдэрч байна вэ?',type:'star'}
+];
+
+const depts = ['Маркетинг','Борлуулалт','Инженерчлэл','Санхүү','HR'];
+const deptData = {
+  'Маркетинг':   [76,80,72,74,78],
+  'Борлуулалт':  [82,75,80,85,79],
+  'Инженерчлэл': [88,84,86,82,80],
+  'Санхүү':      [70,68,72,65,75],
+  'HR':          [80,85,78,76,82]
+};
+const monthlyData = {
+  'Маркетинг':   [70,72,74,73,76,78],
+  'Борлуулалт':  [75,77,79,80,81,82],
+  'Инженерчлэл': [80,82,83,85,86,88],
+  'Санхүү':      [62,64,66,65,68,70],
+  'HR':          [74,76,78,79,80,80]
+};
+const quarterlyData = {
+  'Маркетинг':   [71,73,75,78],
+  'Борлуулалт':  [76,79,81,82],
+  'Инженерчлэл': [81,84,86,88],
+  'Санхүү':      [63,65,67,70],
+  'HR':          [75,78,79,80]
+};
+const colors = ['#378ADD','#1D9E75','#D85A30','#BA7517','#533AB7'];
+const monthLabels = ['1-р сар','2-р сар','3-р сар','4-р сар','5-р сар','6-р сар'];
+const qtrLabels = ['Q1','Q2','Q3','Q4'];
+
+let curView = 'monthly';
+let lineChartInst, barChartInst, radarChartInst, summaryChartInst;
+
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  event.target.classList.add('active');
+  if(id==='charts') renderCharts();
+  if(id==='results') renderResults();
+  if(id==='admin') renderQList();
+  if(id==='summary') renderSummary();
+}
+
+function setStar(q,v) {
+  ratings[q] = v;
+  const container = document.getElementById('stars'+q);
+  container.querySelectorAll('.star').forEach(s=>{
+    s.classList.toggle('sel', parseInt(s.dataset.v) <= v);
+  });
+}
+
+function submitSurvey() {
+  document.getElementById('success-msg').style.display='block';
+  setTimeout(()=>document.getElementById('success-msg').style.display='none',3000);
+}
+
+function addQuestion() {
+  const t = document.getElementById('new-q-title').value.trim();
+  const s = document.getElementById('new-q-sub').value.trim();
+  const tp = document.querySelector('input[name=qtype]:checked').value;
+  if(!t) return;
+  customQuestions.push({title:t,sub:s,type:tp});
+  document.getElementById('new-q-title').value='';
+  document.getElementById('new-q-sub').value='';
+  renderQList();
+}
+
+function renderQList() {
+  const el = document.getElementById('q-list');
+  el.innerHTML = customQuestions.map((q,i)=>`
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary)">
+      <div>
+        <div style="font-size:14px;font-weight:500;color:var(--color-text-primary)">${i+1}. ${q.title}</div>
+        <div style="font-size:12px;color:var(--color-text-secondary);margin-top:2px">${q.sub||'—'} &nbsp;·&nbsp; ${q.type==='star'?'1-5 оноо':q.type==='text'?'Текст':'Тийм/Үгүй'}</div>
+      </div>
+      <button onclick="removeQ(${i})" style="padding:4px 10px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:transparent;cursor:pointer;font-size:12px;color:var(--color-text-secondary);font-family:var(--font-sans)">Устгах</button>
+    </div>
+  `).join('');
+}
+
+function removeQ(i) {
+  customQuestions.splice(i,1);
+  renderQList();
+}
+
+function renderResults() {
+  const tbody = document.getElementById('dept-tbody');
+  tbody.innerHTML = depts.map(d=>{
+    const sc = deptData[d];
+    const pcts = sc.map(v=>Math.round(v));
+    const avg = Math.round(pcts.reduce((a,b)=>a+b,0)/pcts.length);
+    const color = avg>=80?'#3B6D11':avg>=70?'#BA7517':'#A32D2D';
+    return `<tr>
+      <td style="font-weight:500">${d}</td>
+      ${pcts.map(p=>`<td>${p}%</td>`).join('')}
+      <td style="font-weight:500;color:${color}">${avg}%</td>
+    </tr>`;
+  }).join('');
+
+  const pctList = document.getElementById('q-pct-list');
+  const qLabels = ['Бүтээмж','Хамтарч ажиллах','Цаг баримтлал','Санаачлага','Сэтгэл ханамж'];
+  const qAvgs = [0,1,2,3,4].map(i=>Math.round(depts.reduce((s,d)=>s+deptData[d][i],0)/depts.length));
+  pctList.innerHTML = qLabels.map((l,i)=>{
+    const pct = qAvgs[i];
+    const col = pct>=80?'#3B6D11':pct>=70?'#BA7517':'#A32D2D';
+    return `<div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+        <span style="color:var(--color-text-primary)">${l}</span>
+        <span style="font-weight:500;color:${col}">${pct}%</span>
+      </div>
+      <div class="pct-bar"><div class="pct-fill" style="width:${pct}%;background:${col}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function setView(view, btn) {
+  curView = view;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCharts();
+}
+
+function renderCharts() {
+  const labels = curView==='monthly'?monthLabels:qtrLabels;
+  const data = curView==='monthly'?monthlyData:quarterlyData;
+  const avgVals = labels.map((_,i)=>Math.round(depts.reduce((s,d)=>s+data[d][i],0)/depts.length));
+
+  document.getElementById('chart1-title').textContent = curView==='monthly'?'Сарын үнэлгээ — хэлтэс тус бүр (%)':'Улирлын үнэлгээ — хэлтэс тус бүр (%)';
+  document.getElementById('chart2-title').textContent = curView==='monthly'?'Сарын нийт дундаж үнэлгээ (%)':'Улирлын нийт дундаж үнэлгээ (%)';
+
+  const leg = document.getElementById('chart1-legend');
+  leg.innerHTML = depts.map((d,i)=>`<span><span class="leg-dot" style="background:${colors[i]}"></span>${d}</span>`).join('');
+
+  if(lineChartInst) lineChartInst.destroy();
+  lineChartInst = new Chart(document.getElementById('lineChart'),{
+    type:'line',
+    data:{
+      labels,
+      datasets: depts.map((d,i)=>({
+        label:d,
+        data:data[d],
+        borderColor:colors[i],
+        backgroundColor:colors[i]+'22',
+        fill:false,
+        tension:0.3,
+        pointRadius:4,
+        borderWidth:2,
+        borderDash: i===3?[5,4]:[]
+      }))
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        y:{min:55,max:95,ticks:{callback:v=>v+'%'},grid:{color:'rgba(128,128,128,0.1)'}},
+        x:{ticks:{autoSkip:false}}
+      }
+    }
+  });
+
+  if(barChartInst) barChartInst.destroy();
+  barChartInst = new Chart(document.getElementById('barChart'),{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        label:'Нийт дундаж',
+        data:avgVals,
+        backgroundColor:avgVals.map(v=>v>=80?'#1D9E75':v>=70?'#EF9F27':'#D85A30'),
+        borderRadius:4
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        y:{min:50,max:100,ticks:{callback:v=>v+'%'},grid:{color:'rgba(128,128,128,0.1)'}},
+        x:{ticks:{autoSkip:false}}
+      }
+    }
+  });
+}
+
+function renderSummary() {
+  const sLeg = document.getElementById('summary-legend');
+  sLeg.innerHTML = depts.map((d,i)=>`<span><span class="leg-dot" style="background:${colors[i]}"></span>${d}</span>`).join('');
+
+  if(radarChartInst) radarChartInst.destroy();
+  const qLabels = ['Бүтээмж','Хамтарч\nажиллах','Цаг\nбаримтлал','Санаачлага','Сэтгэл\nханамж'];
+  radarChartInst = new Chart(document.getElementById('radarChart'),{
+    type:'radar',
+    data:{
+      labels:['Бүтээмж','Хамтарч ажиллах','Цаг баримтлал','Санаачлага','Сэтгэл ханамж'],
+      datasets: depts.map((d,i)=>({
+        label:d,
+        data:deptData[d],
+        borderColor:colors[i],
+        backgroundColor:colors[i]+'20',
+        borderWidth:2,
+        pointRadius:3
+      }))
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{r:{min:50,max:100,ticks:{callback:v=>v+'%',font:{size:10}},grid:{color:'rgba(128,128,128,0.15)'}}}
+    }
+  });
+
+  if(summaryChartInst) summaryChartInst.destroy();
+  summaryChartInst = new Chart(document.getElementById('summaryChart'),{
+    type:'bar',
+    data:{
+      labels:['Q1','Q2','Q3','Q4'],
+      datasets: depts.map((d,i)=>({
+        label:d,
+        data:quarterlyData[d],
+        backgroundColor:colors[i],
+        borderRadius:3
+      }))
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        y:{min:55,max:95,ticks:{callback:v=>v+'%'},grid:{color:'rgba(128,128,128,0.1)'}},
+        x:{ticks:{autoSkip:false}}
+      }
+    }
+  });
+}
+
+renderQList();
+</script>
