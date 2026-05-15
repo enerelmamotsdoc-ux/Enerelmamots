@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="mn">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Эмнэлгийн бараа, үнэ тооцоологч</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Эмнэлгийн дотоод бүртгэл</p>
+          <h1>Эм, тариа, хэрэгслийн үнэ тооцоологч</h1>
+        </div>
+        <div class="summary">
+          <span>Нийт нэр төрөл</span>
+          <strong id="itemCount">0</strong>
+        </div>
+      </header>
+
+      <section class="workspace">
+        <aside class="side-stack">
+          <form class="entry-panel" id="priceForm">
+            <div class="panel-heading">
+              <h2>Бараа нэмэх</h2>
+              <button class="ghost-button" type="button" id="resetForm">Цэвэрлэх</button>
+            </div>
+
+            <label>
+              Нэр
+              <input id="name" name="name" type="text" placeholder="Жишээ: Парацетамол 500мг" required />
+            </label>
+
+            <div class="field-grid">
+              <label>
+                Ангилал
+                <select id="category" name="category">
+                  <option>Эм</option>
+                  <option>Тариа</option>
+                  <option>Хэрэгсэл</option>
+                  <option>Уусмал</option>
+                  <option>Бусад</option>
+                </select>
+              </label>
+              <label>
+                Нэгж
+                <select id="unit" name="unit">
+                  <option>ш</option>
+                  <option>ампул</option>
+                  <option>флакон</option>
+                  <option>боодол</option>
+                  <option>хайрцаг</option>
+                  <option>литр</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="field-grid">
+              <label>
+                Өртөг үнэ
+                <input id="cost" name="cost" type="number" min="0" step="0.01" value="0" required />
+              </label>
+              <label>
+                Эхний орлого
+                <input id="quantity" name="quantity" type="number" min="0" step="1" value="1" required />
+              </label>
+            </div>
+
+            <div class="field-grid">
+              <label>
+                Нэмэгдэл %
+                <input id="markup" name="markup" type="number" min="0" step="0.1" value="15" required />
+              </label>
+              <label>
+                НӨАТ %
+                <input id="tax" name="tax" type="number" min="0" step="0.1" value="0" required />
+              </label>
+            </div>
+
+            <div class="field-grid">
+              <label>
+                Хөнгөлөлт %
+                <input id="discount" name="discount" type="number" min="0" step="0.1" value="0" required />
+              </label>
+              <label>
+                Дуусах огноо
+                <input id="expires" name="expires" type="date" />
+              </label>
+            </div>
+
+            <div class="calculation-box">
+              <div>
+                <span>Худалдаалах үнэ</span>
+                <strong id="previewPrice">0 ₮</strong>
+              </div>
+              <div>
+                <span>Нэгжийн ашиг</span>
+                <strong id="previewProfit">0 ₮</strong>
+              </div>
+            </div>
+
+            <button class="primary-button" type="submit">Бараа бүртгэх</button>
+          </form>
+
+          <form class="entry-panel compact-panel" id="stockForm">
+            <div class="panel-heading">
+              <h2>Орлого нэмэх / хасах</h2>
+            </div>
+            <label>
+              Бараа
+              <select id="stockItem" required></select>
+            </label>
+            <div class="field-grid">
+              <label>
+                Үйлдэл
+                <select id="stockType">
+                  <option value="add">Орлого нэмэх</option>
+                  <option value="remove">Орлого хасах</option>
+                </select>
+              </label>
+              <label>
+                Тоо
+                <input id="stockQuantity" type="number" min="1" step="1" value="1" required />
+              </label>
+            </div>
+            <button class="primary-button" type="submit">Орлого өөрчлөх</button>
+          </form>
+
+          <form class="entry-panel compact-panel" id="saleForm">
+            <div class="panel-heading">
+              <h2>Борлуулалт хийх</h2>
+            </div>
+            <label>
+              Бараа
+              <select id="saleItem" required></select>
+            </label>
+            <div class="field-grid">
+              <label>
+                Борлуулах тоо
+                <input id="saleQuantity" type="number" min="1" step="1" value="1" required />
+              </label>
+              <div class="mini-total">
+                <span>Борлуулах дүн</span>
+                <strong id="salePreview">0 ₮</strong>
+              </div>
+            </div>
+            <button class="primary-button" type="submit">Борлуулалт бүртгэх</button>
+          </form>
+        </aside>
+
+        <section class="list-panel">
+          <div class="panel-heading list-tools">
+            <h2>Үлдэгдлийн жагсаалт</h2>
+            <div class="actions">
+              <input id="search" type="search" placeholder="Хайх..." />
+              <button class="ghost-button" type="button" id="exportCsv">Үлдэгдэл CSV</button>
+            </div>
+          </div>
+
+          <div class="totals-row">
+            <div>
+              <span>Үлдэгдлийн өртөг</span>
+              <strong id="totalCost">0 ₮</strong>
+            </div>
+            <div>
+              <span>Үлдэгдлийн зарах дүн</span>
+              <strong id="totalSales">0 ₮</strong>
+            </div>
+            <div>
+              <span>Үлдэгдлийн боломжит ашиг</span>
+              <strong id="totalProfit">0 ₮</strong>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Нэр</th>
+                  <th>Ангилал</th>
+                  <th>Өртөг</th>
+                  <th>Зарах үнэ</th>
+                  <th>Орсон</th>
+                  <th>Зарагдсан</th>
+                  <th>Үлдэгдэл</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="itemsTable"></tbody>
+            </table>
+            <div class="empty-state" id="emptyState">
+              <strong>Одоогоор бүртгэл алга</strong>
+              <span>Зүүн талын маягтаар эхний бараагаа нэмээрэй.</span>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="sales-panel">
+        <div class="panel-heading list-tools">
+          <h2>Худалдаалсан барааны жагсаалт</h2>
+          <div class="actions">
+            <input id="salesSearch" type="search" placeholder="Борлуулалтаас хайх..." />
+            <button class="ghost-button" type="button" id="exportSalesCsv">Борлуулалт CSV</button>
+          </div>
+        </div>
+
+        <div class="totals-row sales-totals">
+          <div>
+            <span>Борлуулсан тоо</span>
+            <strong id="soldUnits">0</strong>
+          </div>
+          <div>
+            <span>Нийт борлуулалт</span>
+            <strong id="soldRevenue">0 ₮</strong>
+          </div>
+          <div>
+            <span>Нийт ашиг</span>
+            <strong id="soldProfit">0 ₮</strong>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Огноо</th>
+                <th>Нэр</th>
+                <th>Ангилал</th>
+                <th>Тоо</th>
+                <th>Нэгж үнэ</th>
+                <th>Нийт дүн</th>
+                <th>Ашиг</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="salesTable"></tbody>
+          </table>
+          <div class="empty-state" id="salesEmptyState">
+            <strong>Борлуулалтын бүртгэл алга</strong>
+            <span>Дээрх жагсаалтаас тоо оруулаад “Зарах” дарна.</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

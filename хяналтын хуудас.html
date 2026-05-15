@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="mn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Чанарын менежерийн хяналтын хуудас</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <aside>
+      <div class="brand">
+        <div class="mark">Ч</div>
+        <div>
+          <h1>Эмнэлгийн хяналт</h1>
+          <p>Чанарын баг</p>
+        </div>
+      </div>
+      <nav>
+        <button class="nav-btn active" data-view="dashboard">▣ Самбар</button>
+        <button class="nav-btn" data-view="checklist">✓ Хяналт</button>
+        <button class="nav-btn" data-view="structure">☷ Бүлэг</button>
+        <button class="nav-btn" data-view="staff">☉ Ажилтан</button>
+        <button class="nav-btn" data-view="records">⌁ Бүртгэл</button>
+      </nav>
+      <div class="aside-note">
+        Тийм = 1 оноо, Үгүй = 0 оноо. Дүгнэлт нь тухайн дэд бүлгийн асуултын тоонд үндэслэн автоматаар гарна.
+      </div>
+    </aside>
+
+    <main>
+      <section class="topbar">
+        <div>
+          <h2 id="viewTitle">Нэгдсэн хяналтын самбар</h2>
+          <p id="viewLead">Нийт ажилчдын хяналтын хуудас, оноо, хувь, дүгнэлт, дараагийн хяналтын сануулгыг нэг дор хянана.</p>
+        </div>
+        <div class="toolbar">
+          <button class="btn" id="resetDemo">Демо сэргээх</button>
+          <button class="btn primary" data-switch="checklist">Шинэ хяналт</button>
+        </div>
+      </section>
+
+      <section id="dashboard" class="view">
+        <div class="metrics" id="metrics"></div>
+        <div class="layout">
+          <div class="panel">
+            <h3>Сарын дундаж хувь</h3>
+            <canvas id="monthlyChart" class="chart" width="760" height="320"></canvas>
+          </div>
+          <div class="panel">
+            <h3>Улирлын дундаж хувь</h3>
+            <canvas id="quarterChart" class="chart" width="760" height="320"></canvas>
+          </div>
+        </div>
+        <div class="layout">
+          <div class="panel">
+            <h3>Дараагийн хяналтын сануулга</h3>
+            <div id="reminderList" class="stack"></div>
+          </div>
+          <div class="panel">
+            <h3>Тайлан татах</h3>
+            <div class="toolbar" style="justify-content:flex-start">
+              <button class="btn primary" id="downloadCsv">CSV тайлан татах</button>
+              <button class="btn" id="downloadHtml">Хэвлэх тайлан татах</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Ажилтнаар хяналтын дүн</h3>
+          <div id="employeeHistory" class="stack"></div>
+        </div>
+      </section>
+
+      <section id="checklist" class="view hidden">
+        <div class="layout">
+          <div class="panel">
+            <h3>Хяналтын хуудас бөглөх</h3>
+            <div class="form-grid">
+              <label>Хянагдсан ажилтан
+                <select id="employeeInput"></select>
+              </label>
+              <label>Хянасан огноо
+                <input id="reviewDateInput" type="date">
+              </label>
+              <label>Бүлэг
+                <select id="groupInput"></select>
+              </label>
+              <label>Дэд бүлэг
+                <select id="subgroupInput"></select>
+              </label>
+              <label>Үнэлгээ хийсэн ажилтан
+                <input id="evaluatorInput" list="staffNames" placeholder="Нэр бичих">
+              </label>
+              <label>Үнэлгээ зөвшөөрсөн ажилтан
+                <input id="approvedInput" list="staffNames" placeholder="Нэр бичих">
+              </label>
+              <label>Дараагийн хянах хугацаа
+                <input id="nextReviewInput" type="date">
+              </label>
+            </div>
+            <datalist id="staffNames"></datalist>
+            <div id="questionChecklist" class="stack"></div>
+          </div>
+
+          <div class="panel">
+            <h3>Оноо ба дүгнэлт</h3>
+            <div class="score-card">
+              <div class="score-circle" id="scoreCircle" style="--score:0%"><strong id="percentText">0%</strong></div>
+              <div>
+                <div class="status bad" id="statusText">Хариулт хүлээж байна</div>
+                <div class="meta" id="scoreDetail">0/0 оноо. Асуултад тийм/үгүй гэж хариулахад дүн шууд бодогдоно.</div>
+              </div>
+            </div>
+            <label>Зөвлөмж
+              <textarea id="recommendationInput" placeholder="Сайжруулах зөвлөмж бичих"></textarea>
+            </label>
+            <div style="height:12px"></div>
+            <label>Эргэн хяналтын хэрэгжилт
+              <textarea id="followupInput" placeholder="Эргэн хяналтаар хэрэгжилт хэрхэн хангагдсан талаар бичих"></textarea>
+            </label>
+            <div style="height:12px"></div>
+            <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-bottom:12px">
+              <label>Үнэлгээ хийсэн ажилтны гарын үсэг
+                <canvas class="signature-pad" id="evaluatorSignature" width="520" height="150"></canvas>
+              </label>
+              <label>Зөвшөөрсөн ажилтны гарын үсэг
+                <canvas class="signature-pad" id="approvedSignature" width="520" height="150"></canvas>
+              </label>
+            </div>
+            <div class="toolbar">
+              <button class="btn" id="clearSignatures">Гарын үсэг арилгах</button>
+              <button class="btn hidden" id="cancelEdit">Засвар цуцлах</button>
+              <button class="btn primary" id="saveRecord">Хяналт хадгалах</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="structure" class="view hidden">
+        <div class="layout">
+          <div class="panel">
+            <h3>Бүлэг ба дэд бүлэг засах</h3>
+            <div class="form-grid">
+              <label>Бүлэг сонгох
+                <select id="manageGroupSelect"></select>
+              </label>
+              <label>Бүлгийн нэр засах
+                <input id="manageGroupName">
+              </label>
+              <label>Дэд бүлэг сонгох
+                <select id="manageSubgroupSelect"></select>
+              </label>
+              <label>Дэд бүлгийн нэр засах
+                <input id="manageSubgroupName">
+              </label>
+            </div>
+            <div class="toolbar">
+              <button class="btn" id="renameGroup">Бүлэг хадгалах</button>
+              <button class="btn" id="addGroup">Бүлэг нэмэх</button>
+              <button class="btn danger" id="deleteGroup">Бүлэг устгах</button>
+              <button class="btn" id="renameSubgroup">Дэд бүлэг хадгалах</button>
+              <button class="btn" id="addSubgroup">Дэд бүлэг нэмэх</button>
+              <button class="btn danger" id="deleteSubgroup">Дэд бүлэг устгах</button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>Асуулт нэмэх</h3>
+            <div class="form-grid">
+              <label>Бүлэг
+                <select id="questionGroupSelect"></select>
+              </label>
+              <label>Дэд бүлэг
+                <select id="questionSubgroupSelect"></select>
+              </label>
+              <label class="full">Асуулт
+                <input id="newQuestionText" placeholder="Жишээ: Хяналтын хуудас бүрэн бөглөгдсөн үү?">
+              </label>
+            </div>
+            <button class="btn primary" id="addQuestion">Асуулт нэмэх</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Одоогийн бүтэц</h3>
+          <div id="structureList" class="stack"></div>
+        </div>
+      </section>
+
+      <section id="staff" class="view hidden">
+        <div class="layout">
+          <div class="panel">
+            <h3>Ажилтан нэмэх</h3>
+            <div class="inline-row">
+              <label>Ажилтны нэр
+                <input id="newStaffName" placeholder="Жишээ: Б. Болор">
+              </label>
+              <button class="btn primary" id="addStaff">Ажилтан нэмэх</button>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Ажилтны жагсаалт</h3>
+            <div id="staffList" class="stack"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="records" class="view hidden">
+        <div class="panel">
+          <h3>Хяналтын бүртгэл</h3>
+          <div style="overflow:auto">
+            <table id="recordTable"></table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
